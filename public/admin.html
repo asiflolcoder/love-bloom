@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LoveBloom — admin</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+<style>
+  .admin-wrap { max-width: 480px; margin: 0 auto; padding: 40px 24px 100px; display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 1; }
+  .card { background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2)); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-soft); border: 1px solid rgba(255,255,255,0.05); }
+  .card h2 { font-family: "Fraunces", serif; font-weight: 500; font-size: 19px; margin: 0 0 14px; }
+  label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; margin-top: 14px; }
+  input, textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 12px; color: var(--text-ivory); font-family: "Work Sans", sans-serif; font-size: 14px; }
+  textarea { min-height: 80px; resize: vertical; }
+  button.action { margin-top: 16px; background: var(--accent-gold); color: var(--bg-deep); border: none; border-radius: 999px; padding: 10px 20px; font-weight: 600; cursor: pointer; font-family: "Work Sans", sans-serif; }
+  button.action:hover { opacity: 0.9; }
+  button.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); }
+  .status { font-size: 13px; margin-top: 10px; min-height: 16px; }
+  .status.ok { color: var(--accent-sage); }
+  .status.err { color: var(--accent-rose); }
+  .gate { display: flex; flex-direction: column; gap: 14px; max-width: 340px; margin: 15vh auto; text-align: center; }
+  .memlist { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .memrow { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+  .memrow button { background: none; border: none; color: var(--accent-rose); cursor: pointer; font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"><div class="glow glow-a"></div><div class="glow glow-b"></div></div>
+
+  <div id="gate" class="gate">
+    <h1 style="font-family:'Fraunces',serif;font-weight:500;">Admin</h1>
+    <p style="color:var(--text-muted);font-size:14px;">Enter your passphrase to write today's message.</p>
+    <input id="secretInput" type="password" placeholder="Passphrase" autocomplete="off" />
+    <button id="unlockBtn" class="action">Unlock</button>
+    <p id="gateStatus" class="status err"></p>
+  </div>
+
+  <main id="adminMain" class="admin-wrap hidden">
+    <section class="card">
+      <h2>Today's message</h2>
+      <label for="msgDate">Date</label>
+      <input id="msgDate" type="date" />
+      <label for="msgText">Message</label>
+      <textarea id="msgText" placeholder="Write what you want her to see today..."></textarea>
+      <button id="saveMsgBtn" class="action">Save message</button>
+      <p id="msgStatus" class="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>Flower photo bank</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 4px;">Upload real flower photos — one rotates in as the daily card's photo. Falls back to a generated flower if this bank is empty.</p>
+      <label for="flowerImage">Photo</label>
+      <input id="flowerImage" type="file" accept="image/*" />
+      <label for="flowerCaption">Caption (optional)</label>
+      <input id="flowerCaption" type="text" placeholder="e.g. Peonies, your favorite" />
+      <button id="saveFlowerBtn" class="action">Add photo</button>
+      <p id="flowerStatus" class="status"></p>
+      <div id="flowerList" class="memlist"></div>
+    </section>
+
+    <section class="card">
+      <h2>Nicknames</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 4px;">A different one shows on the card each day, rotating through this list.</p>
+      <label for="nicknameInput">Add a nickname</label>
+      <input id="nicknameInput" type="text" placeholder="e.g. sweet pea" />
+      <button id="saveNicknameBtn" class="action">Add nickname</button>
+      <p id="nicknameStatus" class="status"></p>
+      <div id="nicknameList" class="memlist"></div>
+    </section>
+
+    <section class="card">
+      <h2>Mood history</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 4px;">How she's answered "how are you today?" over time.</p>
+      <div id="moodList" class="memlist"></div>
+    </section>
+
+    <section class="card">
+      <h2>Add a memory</h2>
+      <label for="memTitle">Title</label>
+      <input id="memTitle" type="text" placeholder="e.g. Our first trip" />
+      <label for="memNote">Note</label>
+      <textarea id="memNote" placeholder="A little story or caption..."></textarea>
+      <label for="memImage">Photo (optional)</label>
+      <input id="memImage" type="file" accept="image/*" />
+      <button id="saveMemBtn" class="action">Add memory</button>
+      <p id="memStatus" class="status"></p>
+      <div id="memList" class="memlist"></div>
+    </section>
+
+    <section class="card">
+      <h2>Push notification</h2>
+      <p style="font-size:13px;color:var(--text-muted);margin:0 0 4px;">Manually send today's push right now (useful for testing).</p>
+      <button id="sendPushBtn" class="action secondary">Send now</button>
+      <p id="pushStatus" class="status"></p>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let secret = sessionStorage.getItem("lovebloom-admin-secret") || "";
+
+    async function verify(s) {
+      const res = await fetch("/api/admin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": s },
+        body: "{}",
+      });
+      return res.ok;
+    }
+
+    async function tryUnlock(s) {
+      const ok = await verify(s);
+      if (ok) {
+        secret = s;
+        sessionStorage.setItem("lovebloom-admin-secret", s);
+        $("gate").classList.add("hidden");
+        $("adminMain").classList.remove("hidden");
+        init();
+      } else {
+        $("gateStatus").textContent = "That passphrase didn't work.";
+      }
+    }
+
+    $("unlockBtn").addEventListener("click", () => tryUnlock($("secretInput").value));
+    $("secretInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") tryUnlock($("secretInput").value);
+    });
+
+    if (secret) tryUnlock(secret);
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    async function init() {
+      $("msgDate").value = todayISO();
+
+      $("saveMsgBtn").addEventListener("click", async () => {
+        const date = $("msgDate").value || todayISO();
+        const text = $("msgText").value.trim();
+        const status = $("msgStatus");
+        if (!text) { status.textContent = "Write something first."; status.className = "status err"; return; }
+        try {
+          const res = await fetch("/api/admin/message", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+            body: JSON.stringify({ date, text }),
+          });
+          if (!res.ok) throw new Error();
+          status.textContent = `Saved for ${date}.`;
+          status.className = "status ok";
+        } catch {
+          status.textContent = "Couldn't save. Try again.";
+          status.className = "status err";
+        }
+      });
+
+      $("saveFlowerBtn").addEventListener("click", async () => {
+        const file = $("flowerImage").files[0];
+        const caption = $("flowerCaption").value.trim();
+        const status = $("flowerStatus");
+        if (!file) { status.textContent = "Choose a photo first."; status.className = "status err"; return; }
+
+        const imageDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        try {
+          const res = await fetch("/api/admin/flowers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+            body: JSON.stringify({ imageDataUrl, caption }),
+          });
+          if (!res.ok) throw new Error();
+          status.textContent = "Photo added.";
+          status.className = "status ok";
+          $("flowerImage").value = "";
+          $("flowerCaption").value = "";
+          loadFlowers();
+        } catch {
+          status.textContent = "Couldn't add photo. Try a smaller image.";
+          status.className = "status err";
+        }
+      });
+
+      $("saveNicknameBtn").addEventListener("click", async () => {
+        const nickname = $("nicknameInput").value.trim();
+        const status = $("nicknameStatus");
+        if (!nickname) { status.textContent = "Type a nickname first."; status.className = "status err"; return; }
+        try {
+          const res = await fetch("/api/admin/nicknames", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+            body: JSON.stringify({ nickname }),
+          });
+          if (!res.ok) throw new Error();
+          status.textContent = "Nickname added.";
+          status.className = "status ok";
+          $("nicknameInput").value = "";
+          loadNicknames();
+        } catch {
+          status.textContent = "Couldn't add nickname.";
+          status.className = "status err";
+        }
+      });
+
+      $("saveMemBtn").addEventListener("click", async () => {
+        const title = $("memTitle").value.trim();
+        const note = $("memNote").value.trim();
+        const file = $("memImage").files[0];
+        const status = $("memStatus");
+
+        let imageDataUrl = null;
+        if (file) {
+          imageDataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        try {
+          const res = await fetch("/api/memories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+            body: JSON.stringify({ title, note, imageDataUrl }),
+          });
+          if (!res.ok) throw new Error();
+          status.textContent = "Memory added.";
+          status.className = "status ok";
+          $("memTitle").value = "";
+          $("memNote").value = "";
+          $("memImage").value = "";
+          loadMemories();
+        } catch {
+          status.textContent = "Couldn't add memory.";
+          status.className = "status err";
+        }
+      });
+
+      $("sendPushBtn").addEventListener("click", async () => {
+        const status = $("pushStatus");
+        try {
+          const res = await fetch("/api/admin/send-daily-push", {
+            method: "POST",
+            headers: { "x-admin-secret": secret },
+          });
+          const data = await res.json();
+          status.textContent = data.sent ? "Sent!" : "Push isn't configured on the server yet.";
+          status.className = "status ok";
+        } catch {
+          status.textContent = "Couldn't send.";
+          status.className = "status err";
+        }
+      });
+
+      loadMemories();
+      loadFlowers();
+      loadNicknames();
+      loadMoods();
+    }
+
+    async function loadFlowers() {
+      const res = await fetch("/api/admin/flowers", { headers: { "x-admin-secret": secret } });
+      const photos = await res.json();
+      const list = $("flowerList");
+      list.innerHTML = "";
+      for (const p of photos) {
+        const row = document.createElement("div");
+        row.className = "memrow";
+        row.innerHTML = `<span>${(p.caption || "Untitled photo").slice(0, 40)}</span>`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Remove";
+        delBtn.addEventListener("click", async () => {
+          await fetch(`/api/admin/flowers/${p.id}`, { method: "DELETE", headers: { "x-admin-secret": secret } });
+          loadFlowers();
+        });
+        row.appendChild(delBtn);
+        list.appendChild(row);
+      }
+      if (!photos.length) list.innerHTML = '<p style="font-size:13px;color:var(--text-muted);margin:0;">No photos yet — the card will show a generated flower until you add some.</p>';
+    }
+
+    async function loadNicknames() {
+      const res = await fetch("/api/admin/nicknames", { headers: { "x-admin-secret": secret } });
+      const nicknames = await res.json();
+      const list = $("nicknameList");
+      list.innerHTML = "";
+      for (const n of nicknames) {
+        const row = document.createElement("div");
+        row.className = "memrow";
+        row.innerHTML = `<span>${n}</span>`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Remove";
+        delBtn.addEventListener("click", async () => {
+          await fetch(`/api/admin/nicknames/${encodeURIComponent(n)}`, { method: "DELETE", headers: { "x-admin-secret": secret } });
+          loadNicknames();
+        });
+        row.appendChild(delBtn);
+        list.appendChild(row);
+      }
+    }
+
+    const MOOD_EMOJI = { happy: "😊", sad: "😢", confused: "😕" };
+
+    async function loadMoods() {
+      const res = await fetch("/api/admin/moods", { headers: { "x-admin-secret": secret } });
+      const moods = await res.json();
+      const list = $("moodList");
+      list.innerHTML = "";
+      const dates = Object.keys(moods).sort().reverse();
+      if (!dates.length) {
+        list.innerHTML = '<p style="font-size:13px;color:var(--text-muted);margin:0;">No check-ins yet.</p>';
+        return;
+      }
+      for (const date of dates) {
+        const row = document.createElement("div");
+        row.className = "memrow";
+        row.innerHTML = `<span>${date}</span><span>${MOOD_EMOJI[moods[date].mood] || ""} ${moods[date].mood}</span>`;
+        list.appendChild(row);
+      }
+    }
+
+    async function loadMemories() {
+      const res = await fetch("/api/memories");
+      const memories = await res.json();
+      const list = $("memList");
+      list.innerHTML = "";
+      for (const m of memories) {
+        const row = document.createElement("div");
+        row.className = "memrow";
+        row.innerHTML = `<span>${(m.title || m.note || "Untitled").slice(0, 40)}</span>`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Remove";
+        delBtn.addEventListener("click", async () => {
+          await fetch(`/api/memories/${m.id}`, { method: "DELETE", headers: { "x-admin-secret": secret } });
+          loadMemories();
+        });
+        row.appendChild(delBtn);
+        list.appendChild(row);
+      }
+    }
+  </script>
+</body>
+</html>

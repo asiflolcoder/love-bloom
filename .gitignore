@@ -1,0 +1,7 @@
+node_modules/
+.env
+data/custom-messages.json
+data/reactions.json
+data/memories.json
+data/push-subscriptions.json
+.DS_Store

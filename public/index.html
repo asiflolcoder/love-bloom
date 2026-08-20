@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>LoveBloom — your daily bouquet</title>
+<meta name="description" content="A little flower and a note, every day." />
+<meta name="theme-color" content="#241726" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="sky" aria-hidden="true">
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+  </div>
+
+  <main class="wrap">
+    <header class="top">
+      <span class="eyebrow">good morning</span>
+      <h1 id="greeting" class="greeting">for you</h1>
+    </header>
+
+    <section class="bloom-card" aria-live="polite">
+      <div class="card-media">
+        <img id="flowerPhoto" class="flower-photo hidden" alt="Today's flower" />
+        <svg id="flower" class="flower" viewBox="-140 -160 280 300" role="img" aria-labelledby="flowerTitle">
+          <title id="flowerTitle">Today's bloom</title>
+        </svg>
+      </div>
+      <p class="day-count"><span id="dayNumber">1</span> days of this</p>
+      <p id="nickname" class="nickname">love</p>
+      <p id="message" class="message">Loading today's note&hellip;</p>
+      <button id="reactBtn" class="react-btn" aria-pressed="false" aria-label="Send a heart back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 21s-7.5-4.7-10.2-9.1C-0.2 8.5 1.4 4.8 5 4.1c2.1-0.4 4 0.6 5 2.3 1-1.7 2.9-2.7 5-2.3 3.6 0.7 5.2 4.4 3.2 7.8C19.5 16.3 12 21 12 21z" stroke="currentColor" stroke-width="1.6" fill="none"/>
+        </svg>
+        <span id="reactLabel">Send a heart back</span>
+      </button>
+    </section>
+
+    <section class="mood-section" aria-label="Mood check-in">
+      <h2 class="mood-question">How are you today, my crush?</h2>
+      <div class="mood-buttons" role="group" aria-label="Choose your mood">
+        <button class="mood-btn" data-mood="happy" aria-pressed="false">
+          <span class="mood-emoji" aria-hidden="true">😊</span>
+          <span>Happy</span>
+        </button>
+        <button class="mood-btn" data-mood="sad" aria-pressed="false">
+          <span class="mood-emoji" aria-hidden="true">😢</span>
+          <span>Sad</span>
+        </button>
+        <button class="mood-btn" data-mood="confused" aria-pressed="false">
+          <span class="mood-emoji" aria-hidden="true">😕</span>
+          <span>Confused</span>
+        </button>
+      </div>
+      <p id="moodStatus" class="mood-status" aria-live="polite"></p>
+    </section>
+
+    <section class="memories" aria-label="Memories">
+      <div class="memories-head">
+        <h2>little things we've kept</h2>
+      </div>
+      <div id="memoriesList" class="memories-list">
+        <p class="memories-empty">No memories added yet.</p>
+      </div>
+    </section>
+
+    <section id="installBanner" class="install-banner hidden">
+      <p>Add LoveBloom to your home screen so today's flower is one tap away.</p>
+      <div class="install-actions">
+        <button id="installBtn" class="btn-primary">Add to home screen</button>
+        <button id="dismissInstall" class="btn-ghost">Not now</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <a href="/admin.html" class="admin-link">·</a>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
