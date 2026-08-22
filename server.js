@@ -82,13 +82,59 @@ function getNicknameForDate(dateISO) {
   return bank[day % bank.length];
 }
 
-// Pick today's flower photo deterministically from uploaded photos, if any.
+// Deterministic seeded shuffle (mulberry32) — same seed always produces the same order
+function seededShuffle(array, seed) {
+  const arr = array.slice();
+  let s = seed >>> 0;
+  function rand() {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Pick today's flower photo from uploaded photos, if any.
+// Cycles through every photo once (in a shuffled, non-repeating order) before
+// starting a new cycle, and avoids repeating the same photo back-to-back
+// across cycle boundaries — so even with just 2-3 photos it never feels stuck.
 // Returns null if no photos have been uploaded yet (frontend falls back to the generative flower).
 function getFlowerPhotoForDate(dateISO) {
   const photos = store.getFlowerPhotos();
-  if (!photos.length) return null;
-  const day = dayNumber(dateISO);
-  return photos[day % photos.length];
+  const n = photos.length;
+  if (n === 0) return null;
+  if (n === 1) return photos[0];
+
+  const day = dayNumber(dateISO); // 1-indexed
+
+  // With exactly 2 photos there are only 2 possible orderings, so a shuffle
+  // can't do better than simple alternation — and alternation guarantees
+  // zero back-to-back repeats, which a "random" 2-item shuffle can't promise.
+  if (n === 2) return photos[(day - 1) % 2];
+
+  const cycleIndex = Math.floor((day - 1) / n);
+  const position = (day - 1) % n;
+
+  const order = seededShuffle(photos, cycleIndex + 1);
+
+  // Decide (independent of which position is being requested) whether this
+  // cycle's shuffle happens to start with the same photo that closed out the
+  // previous cycle, and fix it — so every day in this cycle sees a consistent,
+  // already-corrected order, not just whichever day triggered the check.
+  if (cycleIndex > 0) {
+    const prevOrder = seededShuffle(photos, cycleIndex);
+    if (order[0].id === prevOrder[n - 1].id) {
+      const swapWith = n > 1 ? 1 : 0;
+      [order[0], order[swapWith]] = [order[swapWith], order[0]];
+    }
+  }
+
+  return order[position];
 }
 
 const MOOD_OPTIONS = ["happy", "sad", "confused"];
